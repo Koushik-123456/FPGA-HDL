@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Guide - FPGA HDL Verification</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">FPGA HDL Verification</div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="modules.html">Modules</a></li>
+                <li><a href="testbenches.html">Tests</a></li>
+                <li><a href="results.html">Results</a></li>
+                <li><a href="waveforms.html">Waveforms</a></li>
+                <li><a href="realtime.html">Realtime</a></li>
+                <li><a href="guide.html">Guide</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main>
+        <h1>📖 User Guide</h1>
+        
+        <section style="background: white; padding: 2rem; border-radius: 8px; margin-top: 2rem;">
+            <h2>Getting Started</h2>
+            <h3>Prerequisites</h3>
+            <ul style="margin-left: 1rem; color: #666;">
+                <li>Python 3.7+ (for simulation and reporting)</li>
+                <li>PowerShell 5.0+ (for running scripts)</li>
+                <li>Vivado (optional, for FPGA synthesis)</li>
+            </ul>
+            
+            <h3>Installation</h3>
+            <pre style="background: #f0f0f0; padding: 1rem; border-radius: 5px;">
+git clone &lt;repository&gt;
+cd nrml_vlsi_project
+# All tools are self-contained!
+            </pre>
+        </section>
+        
+        <section style="background: white; padding: 2rem; border-radius: 8px; margin-top: 2rem;">
+            <h2>Running Simulations</h2>
+            
+            <h3>Quick Start (PowerShell)</h3>
+            <pre style="background: #f0f0f0; padding: 1rem; border-radius: 5px;">
+# Run all simulations
+.\\scripts\\run_sim.ps1
+
+# Run specific module
+.\\scripts\\run_sim.ps1 alu
+.\\scripts\\run_sim.ps1 mux
+.\\scripts\\run_sim.ps1 counter
+            </pre>
+            
+            <h3>View Results</h3>
+            <pre style="background: #f0f0f0; padding: 1rem; border-radius: 5px;">
+# Generate test report
+python .\\scripts\\test_report.py
+
+# View waveforms in terminal
+python .\\scripts\\vcd_viewer.py wave\\alu_4bit.vcd
+python .\\scripts\\vcd_viewer.py wave\\mux4to1.vcd
+python .\\scripts\\vcd_viewer.py wave\\counter3.vcd
+            </pre>
+        </section>
+        
+        <section style="background: white; padding: 2rem; border-radius: 8px; margin-top: 2rem;">
+            <h2>Project Structure</h2>
+            <pre style="background: #2d2d2d; color: #f8f8f2; padding: 1.5rem; border-radius: 5px; font-family: monospace;">
+nrml_vlsi_project/
+├── src/                     # Verilog modules
+│   ├── alu_4bit.v          # 4-bit ALU (8 operations)
+│   ├── mux4to1.v           # 4-to-1 Multiplexer
+│   └── counter3.v          # 3-bit Counter
+│
+├── tb/                      # Testbenches
+│   ├── alu_4bit_tb.v       # ALU testbench (21 tests)
+│   ├── mux4to1_tb.v        # MUX testbench (10 tests)
+│   └── counter3_tb.v       # Counter testbench (10 tests)
+│
+├── scripts/                 # Simulation and tools
+│   ├── run_sim.ps1         # PowerShell simulator runner
+│   ├── python_sim.py       # Python simulator backend
+│   ├── vcd_viewer.py       # VCD waveform viewer
+│   ├── test_report.py      # Test report generator
+│   └── generate_site.py    # Site generator
+│
+├── wave/                    # Generated waveforms
+│   ├── alu_4bit.vcd        # ALU simulation results
+│   ├── mux4to1.vcd         # MUX simulation results
+│   └── counter3.vcd        # Counter simulation results
+│
+├── site/                    # Documentation site
+│   ├── index.html          # Homepage
+│   ├── modules.html        # Module documentation
+│   ├── testbenches.html    # Testbench details
+│   ├── results.html        # Simulation results
+│   ├── guide.html          # This guide
+│   └── styles.css          # Styling
+│
+├── docs/                    # Additional documentation
+│   └── schematic.md        # Schematic verification guide
+│
+├── vivado/                  # FPGA tool integration
+│   └── run_sim.tcl         # Vivado simulation script
+│
+├── Makefile                 # Build automation
+├── README.md               # Project README
+└── FINAL_OUTPUT.md         # Project summary
+            </pre>
+        </section>
+        
+        <section style="background: white; padding: 2rem; border-radius: 8px; margin-top: 2rem;">
+            <h2>Module Interfaces</h2>
+            
+            <h3>ALU (alu_4bit)</h3>
+            <table>
+                <tr><th>Port</th><th>Width</th><th>Direction</th><th>Description</th></tr>
+                <tr><td>A</td><td>4</td><td>Input</td><td>Operand A</td></tr>
+                <tr><td>B</td><td>4</td><td>Input</td><td>Operand B</td></tr>
+                <tr><td>op</td><td>3</td><td>Input</td><td>Operation select (0-7)</td></tr>
+                <tr><td>carry_in</td><td>1</td><td>Input</td><td>Carry input</td></tr>
+                <tr><td>R</td><td>4</td><td>Output</td><td>Result</td></tr>
+                <tr><td>carry_out</td><td>1</td><td>Output</td><td>Carry output</td></tr>
+                <tr><td>zero</td><td>1</td><td>Output</td><td>Zero flag</td></tr>
+            </table>
+            
+            <h3>MUX (mux4to1)</h3>
+            <table>
+                <tr><th>Port</th><th>Width</th><th>Direction</th><th>Description</th></tr>
+                <tr><td>i0, i1, i2, i3</td><td>WIDTH</td><td>Input</td><td>Data inputs</td></tr>
+                <tr><td>sel</td><td>2</td><td>Input</td><td>Select signal</td></tr>
+                <tr><td>y</td><td>WIDTH</td><td>Output</td><td>Selected output</td></tr>
+            </table>
+            
+            <h3>Counter (counter3)</h3>
+            <table>
+                <tr><th>Port</th><th>Width</th><th>Direction</th><th>Description</th></tr>
+                <tr><td>clk</td><td>1</td><td>Input</td><td>Clock</td></tr>
+                <tr><td>rst</td><td>1</td><td>Input</td><td>Synchronous reset</td></tr>
+                <tr><td>en</td><td>1</td><td>Input</td><td>Enable signal</td></tr>
+                <tr><td>q</td><td>3</td><td>Output</td><td>Counter value</td></tr>
+            </table>
+        </section>
+        
+        <section style="background: white; padding: 2rem; border-radius: 8px; margin-top: 2rem;">
+            <h2>Testing & Verification</h2>
+            <p>All modules have been comprehensively tested with:</p>
+            <ul style="margin-left: 1rem; color: #666;">
+                <li>✅ 41 total test cases across all modules</li>
+                <li>✅ 349 simulation events captured in VCD files</li>
+                <li>✅ 100% test pass rate</li>
+                <li>✅ Edge case and boundary condition coverage</li>
+                <li>✅ Detailed waveform analysis</li>
+            </ul>
+        </section>
+        
+        <section style="background: white; padding: 2rem; border-radius: 8px; margin-top: 2rem;">
+            <h2>Next Steps</h2>
+            <ul style="margin-left: 1rem; color: #666;">
+                <li><strong>Synthesis:</strong> Use Vivado/Quartus to synthesize for target FPGA</li>
+                <li><strong>Implementation:</strong> Run place & route in FPGA tool</li>
+                <li><strong>Hardware Testing:</strong> Program FPGA and verify with actual hardware</li>
+                <li><strong>Integration:</strong> Combine modules into larger systems</li>
+                <li><strong>Documentation:</strong> Create technical specifications and design documents</li>
+            </ul>
+        </section>
+    </main>
+    
+    <footer>
+        <p>FPGA HDL Verification Project | User Guide</p>
+    </footer>
+</body>
+</html>

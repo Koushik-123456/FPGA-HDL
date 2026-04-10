@@ -1,0 +1,171 @@
+# Makefile for Icarus Verilog HDL Verification Project
+# Usage: make [target]
+# Targets: all, alu, mux, counter, clean, view-alu, view-mux, view-counter
+
+# Directories
+SRC_DIR := src
+TB_DIR := tb
+BUILD_DIR := build
+WAVE_DIR := wave
+SITE_DIR := site
+
+# Verilog source files
+ALU_SRC := $(SRC_DIR)/alu_4bit.v $(TB_DIR)/alu_4bit_tb.v
+MUX_SRC := $(SRC_DIR)/mux4to1.v $(TB_DIR)/mux4to1_tb.v
+COUNTER_SRC := $(SRC_DIR)/counter3.v $(TB_DIR)/counter3_tb.v
+
+# VVP executable files
+ALU_VVP := $(BUILD_DIR)/alu_4bit.vvp
+MUX_VVP := $(BUILD_DIR)/mux4to1.vvp
+COUNTER_VVP := $(BUILD_DIR)/counter3.vvp
+
+# VCD waveform files
+ALU_VCD := $(WAVE_DIR)/alu_4bit.vcd
+MUX_VCD := $(WAVE_DIR)/mux4to1.vcd
+COUNTER_VCD := $(WAVE_DIR)/counter3.vcd
+
+# Compilation tools
+IVERILOG := iverilog
+VVP := vvp
+
+# Default target
+.PHONY: all
+all: $(ALU_VCD) $(MUX_VCD) $(COUNTER_VCD)
+	@echo ""
+	@echo "✓ All simulations completed successfully!"
+	@echo ""
+	@echo "Generated VCD files:"
+	@echo "  - $(ALU_VCD)"
+	@echo "  - $(MUX_VCD)"
+	@echo "  - $(COUNTER_VCD)"
+	@echo ""
+	@echo "View waveforms with GTKWave:"
+	@echo "  make view-alu    - View ALU waveforms"
+	@echo "  make view-mux    - View MUX waveforms"
+	@echo "  make view-counter - View Counter waveforms"
+	@echo ""
+	@echo "Or view in browser:"
+	@echo "  start site/waveforms.html"
+	@echo ""
+
+# Ensure directories exist
+$(BUILD_DIR):
+	@mkdir -p $(BUILD_DIR)
+
+$(WAVE_DIR):
+	@mkdir -p $(WAVE_DIR)
+
+# ALU compilation and simulation
+$(ALU_VVP): $(ALU_SRC) | $(BUILD_DIR)
+	@echo "Compiling ALU testbench..."
+	@$(IVERILOG) -o $@ $(ALU_SRC)
+	@echo "✓ ALU compiled"
+
+$(ALU_VCD): $(ALU_VVP) | $(WAVE_DIR)
+	@echo "Running ALU simulation..."
+	@$(VVP) $< -vcd $@
+	@echo "✓ ALU simulation complete"
+
+.PHONY: alu
+alu: $(ALU_VCD)
+
+# MUX compilation and simulation
+$(MUX_VVP): $(MUX_SRC) | $(BUILD_DIR)
+	@echo "Compiling MUX testbench..."
+	@$(IVERILOG) -o $@ $(MUX_SRC)
+	@echo "✓ MUX compiled"
+
+$(MUX_VCD): $(MUX_VVP) | $(WAVE_DIR)
+	@echo "Running MUX simulation..."
+	@$(VVP) $< -vcd $@
+	@echo "✓ MUX simulation complete"
+
+.PHONY: mux
+mux: $(MUX_VCD)
+
+# Counter compilation and simulation
+$(COUNTER_VVP): $(COUNTER_SRC) | $(BUILD_DIR)
+	@echo "Compiling Counter testbench..."
+	@$(IVERILOG) -o $@ $(COUNTER_SRC)
+	@echo "✓ Counter compiled"
+
+$(COUNTER_VCD): $(COUNTER_VVP) | $(WAVE_DIR)
+	@echo "Running Counter simulation..."
+	@$(VVP) $< -vcd $@
+	@echo "✓ Counter simulation complete"
+
+.PHONY: counter
+counter: $(COUNTER_VCD)
+
+# View waveforms with GTKWave
+.PHONY: view-alu
+view-alu: $(ALU_VCD)
+	@gtkwave $< &
+
+.PHONY: view-mux
+view-mux: $(MUX_VCD)
+	@gtkwave $< &
+
+.PHONY: view-counter
+view-counter: $(COUNTER_VCD)
+	@gtkwave $< &
+
+# View all waveforms
+.PHONY: view-all
+view-all: view-alu view-mux view-counter
+	@echo "Opening all waveforms in GTKWave..."
+
+# View HTML waveforms
+.PHONY: view-html
+view-html:
+	@start $(SITE_DIR)/waveforms.html
+
+# Clean build artifacts (keep VCD files)
+.PHONY: clean-build
+clean-build:
+	@rm -rf $(BUILD_DIR)
+	@echo "Cleaned build directory"
+
+# Clean all generated files
+.PHONY: clean
+clean:
+	@rm -rf $(BUILD_DIR)
+	@rm -f $(ALU_VCD) $(MUX_VCD) $(COUNTER_VCD)
+	@echo "Cleaned build and wave directories"
+
+# Clean everything
+.PHONY: distclean
+distclean: clean
+	@rm -rf $(BUILD_DIR) $(WAVE_DIR)
+	@echo "Cleaned all generated files"
+
+# Show help
+.PHONY: help
+help:
+	@echo "Icarus Verilog HDL Verification Project"
+	@echo "========================================"
+	@echo ""
+	@echo "Available targets:"
+	@echo "  make all           - Compile and simulate all modules"
+	@echo "  make alu           - Compile and simulate ALU only"
+	@echo "  make mux           - Compile and simulate MUX only"
+	@echo "  make counter       - Compile and simulate Counter only"
+	@echo ""
+	@echo "Viewing waveforms:"
+	@echo "  make view-alu      - View ALU waveforms in GTKWave"
+	@echo "  make view-mux      - View MUX waveforms in GTKWave"
+	@echo "  make view-counter  - View Counter waveforms in GTKWave"
+	@echo "  make view-all      - View all waveforms in GTKWave"
+	@echo "  make view-html     - View waveforms in web browser"
+	@echo ""
+	@echo "Cleanup:"
+	@echo "  make clean-build   - Remove compiled .vvp files"
+	@echo "  make clean         - Remove compiled and VCD files"
+	@echo "  make distclean     - Remove all generated files"
+	@echo ""
+	@echo "Other:"
+	@echo "  make help          - Show this help message"
+	@echo ""
+
+# Phony targets
+.PHONY: clean clean-build distclean help all alu mux counter

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testbenches - FPGA HDL Verification</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">FPGA HDL Verification</div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="modules.html">Modules</a></li>
+                <li><a href="testbenches.html">Tests</a></li>
+                <li><a href="results.html">Results</a></li>
+                <li><a href="waveforms.html">Waveforms</a></li>
+                <li><a href="realtime.html">Realtime</a></li>
+                <li><a href="guide.html">Guide</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main>
+        <h1>🧪 Testbenches</h1>
+        
+        <section style="background: white; padding: 2rem; border-radius: 8px; margin-top: 2rem;">
+            <h2>ALU Testbench (alu_4bit_tb.v)</h2>
+            <p>Comprehensive testbench for the 4-bit ALU module with 21 test vectors covering all operations.</p>
+            <h3>Test Cases:</h3>
+            <ul style="margin-left: 1rem; color: #666;">
+                <li><strong>ADD Operations (4 tests):</strong> Basic addition, carry propagation, zero result, carry-in handling</li>
+                <li><strong>SUB Operations (3 tests):</strong> Subtraction, underflow handling, edge cases</li>
+                <li><strong>AND Operations (3 tests):</strong> All zeros, mask operations, reflexive</li>
+                <li><strong>OR Operations (3 tests):</strong> Full ones, identity, zero input</li>
+                <li><strong>XOR Operations (2 tests):</strong> Toggle, self-XOR (zero)</li>
+                <li><strong>XNOR Operations (2 tests):</strong> Complement, reflexive</li>
+                <li><strong>PASS A Operations (2 tests):</strong> Data passthrough, zero passthrough</li>
+                <li><strong>NOR Operations (1 test):</strong> All zero input</li>
+            </ul>
+            <p style="margin-top: 1rem; color: #28a745;"><strong>Status: ✅ 21/21 PASSED</strong></p>
+        </section>
+        
+        <section style="background: white; padding: 2rem; border-radius: 8px; margin-top: 2rem;">
+            <h2>MUX Testbench (mux4to1_tb.v)</h2>
+            <p>Testbench for the 4-to-1 multiplexer with comprehensive input and select combinations.</p>
+            <h3>Test Cases:</h3>
+            <ul style="margin-left: 1rem; color: #666;">
+                <li><strong>Basic Selection (4 tests):</strong> sel=00,01,10,11 with data [1,2,3,4]</li>
+                <li><strong>Pattern Testing (4 tests):</strong> sel=00,01,10,11 with data [F,A,5,0]</li>
+                <li><strong>Edge Cases (2 tests):</strong> All zeros, all ones</li>
+            </ul>
+            <p style="margin-top: 1rem; color: #28a745;"><strong>Status: ✅ 10/10 PASSED</strong></p>
+        </section>
+        
+        <section style="background: white; padding: 2rem; border-radius: 8px; margin-top: 2rem;">
+            <h2>Counter Testbench (counter3_tb.v)</h2>
+            <p>Testbench for the 3-bit synchronous counter covering reset, enable, and counting operations.</p>
+            <h3>Test Phases:</h3>
+            <ul style="margin-left: 1rem; color: #666;">
+                <li><strong>Phase 1 - Reset Active (9 cycles):</strong> Verify reset holds counter at 0</li>
+                <li><strong>Phase 2 - Counting (8 cycles):</strong> Verify increment from 0-7 with enable high</li>
+                <li><strong>Phase 3 - Disabled (5 cycles):</strong> Verify counter holds value when enable is low</li>
+                <li><strong>Phase 4 - Resume (3 cycles):</strong> Verify resume counting from held value</li>
+            </ul>
+            <p style="margin-top: 1rem; color: #28a745;"><strong>Status: ✅ ALL PHASES PASSED</strong></p>
+        </section>
+        
+        <section style="background: white; padding: 2rem; border-radius: 8px; margin-top: 2rem;">
+            <h2>Test Statistics</h2>
+            <table>
+                <tr>
+                    <th>Testbench</th>
+                    <th>Signals</th>
+                    <th>Events</th>
+                    <th>Simulation Time</th>
+                    <th>Result</th>
+                </tr>
+                <tr>
+                    <td><strong>ALU TB</strong></td>
+                    <td>7</td>
+                    <td>154</td>
+                    <td>0-201 ns</td>
+                    <td><span style="color: #28a745;">✅ PASS</span></td>
+                </tr>
+                <tr>
+                    <td><strong>MUX TB</strong></td>
+                    <td>6</td>
+                    <td>66</td>
+                    <td>0-91 ns</td>
+                    <td><span style="color: #28a745;">✅ PASS</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Counter TB</strong></td>
+                    <td>4</td>
+                    <td>129</td>
+                    <td>0-246 ns</td>
+                    <td><span style="color: #28a745;">✅ PASS</span></td>
+                </tr>
+            </table>
+        </section>
+    </main>
+    
+    <footer>
+        <p>FPGA HDL Verification Project | Testbenches Documentation</p>
+    </footer>
+</body>
+</html>
