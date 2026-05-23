@@ -1,79 +1,52 @@
-# VLSI CLB (Configurable Logic Block) Design
+# FPGA HDL Verification Project
 
-## Overview
-This project contains digital logic building blocks designed for VLSI implementation using Vivado.
+This project provides Verilog implementations and testbenches for common FPGA logic blocks and a simple simulation workflow.
 
-## Modules
+Included examples:
+- 4-bit ALU ([src/alu_4bit.v](src/alu_4bit.v))
+- 4-to-1 multiplexer ([src/mux4to1.v](src/mux4to1.v)) — parameterizable width
+- 3-bit synchronous counter ([src/counter3.v](src/counter3.v))
 
-### 1. **2:1 Multiplexer** (`mux2to1`)
-- Inputs: `a`, `b`, `sel`
-- Output: `y`
-- Selects between two 1-bit inputs
+Project structure
+- [src/](src): Verilog sources
+- [tb/](tb): Testbenches for simulation
+- [scripts/](scripts): helper run scripts (PowerShell)
+- [vivado/](vivado): example Vivado TCL for project creation/sim
+- [docs/](docs): schematic-level notes
 
-### 2. **4:1 Multiplexer** (`mux4to1`)
-- Inputs: `in[3:0]` (4-bit), `sel[1:0]` (2-bit selector)
-- Output: `y`
-- Selects one of four inputs
+Quickstart (Icarus Verilog + GTKWave)
 
-### 3. **3:8 Decoder** (`decoder3to8`)
-- Input: `a[2:0]` (3-bit address)
-- Output: `y[7:0]` (8-bit one-hot encoded)
-- Decodes 3-bit input to 8 active lines
+1) Install Icarus Verilog and GTKWave (or use ModelSim/Vivado)
+2) From the project root run (Linux/macOS):
 
-### 4. **Full Adder** (`full_adder`)
-- Inputs: `a`, `b`, `cin`
-- Outputs: `sum`, `cout`
-- Standard 1-bit full adder
-
-### 5. **D Flip-Flop** (`d_ff`)
-- Inputs: `clk`, `d`
-- Output: `q`
-- Captures data on rising clock edge
-
-### 6. **4-Bit Counter** (`counter4bit`)
-- Inputs: `clk`, `reset`
-- Output: `count[3:0]`
-- Increments on each clock cycle, resets when reset is asserted
-
-### 7. **Top Module** (`clb_top`)
-- Hierarchical instantiation of all modules above
-- Complete testbench provided for validation
-
-## File Structure
-```
-├── clb_design.v      # Main design file with all modules
-├── clb_tb.v          # Testbench with comprehensive test cases
-├── .gitignore        # Git ignore rules for Vivado projects
-└── README.md         # This file
-```
-
-## Simulation Results
-
-To view simulation results:
-1. Open the Vivado project
-2. Run behavioral simulation
-3. Check the waveforms directory for `.wdb` and `.vcd` files
-4. Review the simulation log from Vivado console
-
-## Quick Simulation Commands
-
-If using iverilog:
 ```bash
-iverilog -o clb_sim clb_design.v clb_tb.v
-vvp clb_sim
+make sim_alu    # runs ALU testbench (requires iverilog/vvp on PATH)
+make sim_mux
+make sim_counter
 ```
 
-## Tools Used
-- **Vivado Design Suite** (for synthesis and implementation)
-- **iverilog** (optional, for open-source simulation)
+On Windows you can use the PowerShell helper:
 
-## Version History
-- **v1.0**: Initial design with basic modules and testbench
+```powershell
+.\scripts\run_sim.ps1 alu
+.\scripts\run_sim.ps1 mux
+.\scripts\run_sim.ps1 counter
+```
 
-## Author
-VLSI Design Team
+Waveforms are written to `wave/*.vcd` by the testbenches and can be opened with GTKWave.
 
-## Notes
-- All modules use synchronous design principles
-- Testbench includes automated test cases for all modules
-- Waveform captures are saved in Vivado simulation outputs
+Vivado (optional)
+
+Use the provided TCL script to create a Vivado project and launch simulation (edit target part as needed):
+
+```bash
+vivado -mode batch -source vivado/run_sim.tcl
+```
+
+Schematic-level verification
+
+See [docs/schematic.md](docs/schematic.md) for guidance on recreating the logic with gates/primitive symbols and comparing waveforms.
+
+Next steps
+- Run the provided testbenches with your simulator of choice and inspect `wave/*.vcd` with GTKWave or ModelSim.
+- Optionally create an FPGA project in Vivado/Quartus and run timing/implementation flows.

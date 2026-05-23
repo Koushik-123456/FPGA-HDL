@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modules - FPGA HDL Verification</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">FPGA HDL Verification</div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="modules.html">Modules</a></li>
+                <li><a href="testbenches.html">Tests</a></li>
+                <li><a href="results.html">Results</a></li>
+                <li><a href="waveforms.html">Waveforms</a></li>
+                <li><a href="realtime.html">Realtime</a></li>
+                <li><a href="guide.html">Guide</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    
+    <main>
+        <h1>📦 Verilog Modules</h1>
+        
+        <div class="card-grid">
+            <div class="card">
+                <h3>4-Bit ALU</h3>
+                <p><code>src/alu_4bit.v</code></p>
+                <p>Arithmetic Logic Unit with 8 operations:</p>
+                <ul style="margin-left: 1rem; color: #666;">
+                    <li>ADD (with carry propagation)</li>
+                    <li>SUB (subtraction)</li>
+                    <li>AND, OR, XOR, XNOR</li>
+                    <li>PASS A (passthrough)</li>
+                    <li>NOR (bitwise NOR)</li>
+                </ul>
+                <p style="margin-top: 1rem; color: #667eea;"><strong>Test Cases: 21</strong> ✅</p>
+            </div>
+            
+            <div class="card">
+                <h3>4-to-1 Multiplexer</h3>
+                <p><code>src/mux4to1.v</code></p>
+                <p>Parameterizable data multiplexer:</p>
+                <ul style="margin-left: 1rem; color: #666;">
+                    <li>4 data inputs (4-bit default)</li>
+                    <li>2-bit select signal</li>
+                    <li>Combinational logic</li>
+                    <li>WIDTH parameter for customization</li>
+                </ul>
+                <p style="margin-top: 1rem; color: #667eea;"><strong>Test Cases: 10</strong> ✅</p>
+            </div>
+            
+            <div class="card">
+                <h3>3-Bit Counter</h3>
+                <p><code>src/counter3.v</code></p>
+                <p>Synchronous counter with control:</p>
+                <ul style="margin-left: 1rem; color: #666;">
+                    <li>3-bit counter (0-7)</li>
+                    <li>Synchronous reset</li>
+                    <li>Enable/disable control</li>
+                    <li>Clock-driven operation</li>
+                </ul>
+                <p style="margin-top: 1rem; color: #667eea;"><strong>Test Cases: 10</strong> ✅</p>
+            </div>
+        </div>
+        
+        <section style="background: white; padding: 2rem; border-radius: 8px; margin-top: 2rem;">
+            <h2>Pin Definitions</h2>
+            <table>
+                <tr>
+                    <th>Module</th>
+                    <th>Input Ports</th>
+                    <th>Output Ports</th>
+                </tr>
+                <tr>
+                    <td><strong>ALU</strong></td>
+                    <td>A[3:0], B[3:0], op[2:0], carry_in</td>
+                    <td>R[3:0], carry_out, zero</td>
+                </tr>
+                <tr>
+                    <td><strong>MUX</strong></td>
+                    <td>i0, i1, i2, i3, sel[1:0]</td>
+                    <td>y</td>
+                </tr>
+                <tr>
+                    <td><strong>Counter</strong></td>
+                    <td>clk, rst, en</td>
+                    <td>q[2:0]</td>
+                </tr>
+            </table>
+        </section>
+    </main>
+    
+    <footer>
+        <p>FPGA HDL Verification Project | Generated 2026-04-09 23:22:36</p>
+    </footer>
+</body>
+</html>

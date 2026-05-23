@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realtime VCD Waveform Viewer</title>
+    <style>
+        :root {
+            --bg: #0f1117;
+            --panel: #171a22;
+            --grid: #2a2e3b;
+            --text: #e6e8ef;
+            --muted: #a9afbf;
+            --accent: #44d17a;
+            --accent2: #4a9eff;
+            --warn: #ffcc66;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at top, #1a2030, var(--bg) 50%);
+            color: var(--text);
+        }
+
+        .wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid #2d3242;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: 24px;
+            color: var(--accent);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            align-items: end;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--muted);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #394059;
+            background: #111521;
+            color: var(--text);
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--accent2), #2f7df5);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+        }
+
+        .meta {
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--muted);
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .viewer {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 10px;
+            min-height: 420px;
+        }
+
+        .signals {
+            background: #121622;
+            border: 1px solid #2e354b;
+            border-radius: 10px;
+            padding: 8px;
+            overflow-y: auto;
+            max-height: 520px;
+        }
+
+        .signals div {
+            padding: 8px;
+            border-bottom: 1px solid #23293a;
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .canvasWrap {
+            overflow: auto;
+            background: #0d1018;
+            border: 1px solid #2e354b;
+            border-radius: 10px;
+            padding: 8px;
+        }
+
+        #waveCanvas {
+            background: #0d1018;
+            display: block;
+        }
+
+        .hint {
+            color: var(--warn);
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 900px) {
+            .viewer {
+                grid-template-columns: 1fr;
+            }
+
+            .signals {
+                max-height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="panel">
+            <h1>Realtime Waveform Viewer</h1>
+            <div class="controls">
+                <div>
+                    <label for="moduleSelect">Module</label>
+                    <select id="moduleSelect">
+                        <option value="alu_4bit.vcd">ALU (alu_4bit.vcd)</option>
+                        <option value="mux4to1.vcd">MUX (mux4to1.vcd)</option>
+                        <option value="counter3.vcd">Counter (counter3.vcd)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="intervalMs">Refresh (ms)</label>
+                    <input id="intervalMs" type="number" min="500" step="500" value="2000">
+                </div>
+                <div>
+                    <label for="zoom">Zoom</label>
+                    <input id="zoom" type="number" min="0.25" step="0.25" value="1">
+                </div>
+                <div>
+                    <label>&nbsp;</label>
+                    <button id="refreshBtn">Refresh Now</button>
+                </div>
+            </div>
+            <div class="meta">
+                <div id="status">Status: waiting</div>
+                <div id="stats">Signals: 0 | Events: 0 | Max time: 0</div>
+                <div id="updated">Last update: -</div>
+            </div>
+            <div class="hint">This page polls ../wave/*.vcd. Serve project root (not just site folder).</div>
+        </div>
+
+        <div class="panel viewer">
+            <div id="signals" class="signals"></div>
+            <div class="canvasWrap">
+                <canvas id="waveCanvas" width="2000" height="520"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const moduleSelect = document.getElementById('moduleSelect');
+        const intervalMsInput = document.getElementById('intervalMs');
+        const zoomInput = document.getElementById('zoom');
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        const statusEl = document.getElementById('status');
+        const statsEl = document.getElementById('stats');
+        const updatedEl = document.getElementById('updated');
+        const signalsEl = document.getElementById('signals');
+
+        const canvas = document.getElementById('waveCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let timer = null;
+
+        function setStatus(text) {
+            statusEl.textContent = `Status: ${text}`;
+        }
+
+        function parseVcd(text) {
+            const lines = text.split(/\r?\n/);
+            const signalBySymbol = {};
+            const signals = [];
+            const events = [];
+            let currentTime = 0;
+
+            for (const raw of lines) {
+                const line = raw.trim();
+                if (!line) continue;
+
+                if (line.startsWith('$var')) {
+                    const parts = line.split(/\s+/);
+                    if (parts.length >= 5) {
+                        const width = parseInt(parts[2], 10);
+                        const symbol = parts[3];
+                        const name = parts[4];
+                        const label = width > 1 ? `${name}[${width - 1}:0]` : name;
+                        const index = signals.length;
+                        signals.push(label);
+                        signalBySymbol[symbol] = { index, width };
+                    }
+                    continue;
+                }
+
+                if (line[0] === '#') {
+                    currentTime = parseInt(line.slice(1), 10) || 0;
+                    continue;
+                }
+
+                if (/^[01xz][^\s]+$/i.test(line)) {
+                    const value = line[0].toLowerCase();
+                    const symbol = line.slice(1);
+                    if (signalBySymbol[symbol]) {
+                        events.push({ time: currentTime, signal: signalBySymbol[symbol].index, value });
+                    }
+                    continue;
+                }
+
+                const vec = line.match(/^b([01xz]+)\s+([^\s]+)$/i);
+                if (vec) {
+                    const value = vec[1].toLowerCase();
+                    const symbol = vec[2];
+                    if (signalBySymbol[symbol]) {
+                        events.push({ time: currentTime, signal: signalBySymbol[symbol].index, value });
+                    }
+                }
+            }
+
+            const maxTime = events.length ? Math.max(...events.map(e => e.time)) : 0;
+            return { signals, events, maxTime };
+        }
+
+        function signalLevel(value, baseY) {
+            const high = value === '1' || (value.length > 1 && value[0] === '1');
+            return high ? baseY - 10 : baseY + 10;
+        }
+
+        function renderWave(data) {
+            const zoom = Math.max(0.25, Number(zoomInput.value) || 1);
+            const leftPad = 50;
+            const row = 32;
+            const bottomPad = 28;
+            const width = Math.max(1000, Math.ceil((data.maxTime + 20) * 10 * zoom));
+            const height = Math.max(260, data.signals.length * row + bottomPad + 10);
+
+            canvas.width = width;
+            canvas.height = height;
+
+            ctx.fillStyle = '#0d1018';
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.strokeStyle = '#2a2e3b';
+            ctx.lineWidth = 1;
+            for (let t = 0; t <= data.maxTime; t += 10) {
+                const x = leftPad + t * 10 * zoom;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height - bottomPad);
+                ctx.stroke();
+
+                ctx.fillStyle = '#7f88a3';
+                ctx.font = '11px Consolas';
+                ctx.fillText(`${t}`, x - 8, height - 8);
+            }
+
+            for (let i = 0; i < data.signals.length; i++) {
+                const y = 18 + i * row;
+                ctx.strokeStyle = '#253047';
+                ctx.beginPath();
+                ctx.moveTo(leftPad, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+
+            data.signals.forEach((_, i) => {
+                const se = data.events.filter(e => e.signal === i).sort((a, b) => a.time - b.time);
+                if (!se.length) return;
+
+                const y = 18 + i * row;
+                let lastX = leftPad;
+                let lastY = signalLevel(se[0].value, y);
+
+                ctx.strokeStyle = '#44d17a';
+                ctx.lineWidth = 2;
+
+                for (const ev of se) {
+                    const x = leftPad + ev.time * 10 * zoom;
+                    const ny = signalLevel(ev.value, y);
+
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(x, lastY);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(x, lastY);
+                    ctx.lineTo(x, ny);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#4a9eff';
+                    ctx.font = '10px Consolas';
+                    ctx.fillText(ev.value, x + 2, ny - 2);
+
+                    lastX = x;
+                    lastY = ny;
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(width, lastY);
+                ctx.stroke();
+            });
+
+            signalsEl.innerHTML = data.signals.map(s => `<div>${s}</div>`).join('');
+            statsEl.textContent = `Signals: ${data.signals.length} | Events: ${data.events.length} | Max time: ${data.maxTime}`;
+        }
+
+        async function refresh() {
+            const file = moduleSelect.value;
+            setStatus(`loading ${file}`);
+            try {
+                const res = await fetch(`../wave/${file}?t=${Date.now()}`, { cache: 'no-store' });
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+                const txt = await res.text();
+                const parsed = parseVcd(txt);
+                renderWave(parsed);
+                updatedEl.textContent = `Last update: ${new Date().toLocaleTimeString()}`;
+                setStatus('live');
+            } catch (err) {
+                setStatus(`error (${err.message})`);
+            }
+        }
+
+        function restartPolling() {
+            if (timer) clearInterval(timer);
+            const ms = Math.max(500, Number(intervalMsInput.value) || 2000);
+            timer = setInterval(refresh, ms);
+        }
+
+        refreshBtn.addEventListener('click', refresh);
+        moduleSelect.addEventListener('change', refresh);
+        zoomInput.addEventListener('change', refresh);
+        intervalMsInput.addEventListener('change', restartPolling);
+
+        refresh();
+        restartPolling();
+    </script>
+</body>
+</html>
