@@ -1,4 +1,4 @@
-# FPGA HDL Verification Project
+# FPGA Logic Block Design and Verification using Verilog HDL and Xilinx Vivado
 
 This project provides Verilog implementations and testbenches for common FPGA logic blocks and a simple simulation workflow.
 
