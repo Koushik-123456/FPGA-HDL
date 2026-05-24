@@ -1,0 +1,38 @@
+digraph rtl_schematic {
+    rankdir=LR;
+    node [shape=record, style=filled, fillcolor="#f8f9fa", color="#333"];
+
+    clb_design [label="{clb_design|+ alu_4bit\l+ mux4to1\l+ counter3\l}", fillcolor="#e2e8f0"];
+    alu [label="{alu_4bit|a[3:0]\lb[3:0]\lop[1:0]\l|out[3:0]\lzero\lcarry\loverflow\l}"];
+    mux [label="{mux4to1|sel[1:0]\lin0[3:0]\lin1[3:0]\lin2[3:0]\lin3[3:0]\l|out[3:0]\l}"];
+    cnt [label="{counter3|clk\lrst\len\l|count[2:0]\l}"];
+
+    clb_design -> alu [label="instantiates"];
+    clb_design -> mux [label="instantiates"];
+    clb_design -> cnt [label="instantiates"];
+
+    subgraph cluster_signals {
+        label="Top-level connections";
+        style=dashed;
+        a [label="a[3:0]", shape=oval, fillcolor="#fff3bf"];
+        b [label="b[3:0]", shape=oval, fillcolor="#fff3bf"];
+        op [label="op[1:0]", shape=oval, fillcolor="#fff3bf"];
+        sel [label="sel[1:0]", shape=oval, fillcolor="#fff3bf"];
+        clk [label="clk", shape=oval, fillcolor="#d6e9c6"];
+        rst [label="rst", shape=oval, fillcolor="#d6e9c6"];
+        en [label="en", shape=oval, fillcolor="#d6e9c6"];
+        out [label="out[3:0]", shape=oval, fillcolor="#cfe2ff"];
+        count [label="count[2:0]", shape=oval, fillcolor="#cfe2ff"];
+    }
+
+    a -> alu;
+    b -> alu;
+    op -> alu;
+    alu -> out;
+    sel -> mux;
+    mux -> out;
+    clk -> cnt;
+    rst -> cnt;
+    en -> cnt;
+    cnt -> count;
+}
