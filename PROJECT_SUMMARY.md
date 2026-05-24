@@ -1,4 +1,7 @@
-# FPGA-HDL Project Summary
+cd "c:\Users\sunka\OneDrive\Desktop\vlsi vivado"
+git add screenshots/rtl/rtl_schematic.png
+git commit -m "Add RTL schematic screenshot"
+git push origin main# FPGA-HDL Project Summary
 
 ## Project Overview
 CLB (Configurable Logic Block) Design with comprehensive simulation and implementation
